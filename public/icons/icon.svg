@@ -1,0 +1,18 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="#0A66C2"/>
+
+  <!-- Sparkles icon -->
+  <path d="M64 20L68 36L84 40L68 44L64 60L60 44L44 40L60 36L64 20Z" fill="#FFD93D" stroke="#FFC107" stroke-width="2"/>
+  <path d="M40 50L42 58L50 60L42 62L40 70L38 62L30 60L38 58L40 50Z" fill="#FFD93D" stroke="#FFC107" stroke-width="1.5"/>
+  <path d="M88 50L90 58L98 60L90 62L88 70L86 62L78 60L86 58L88 50Z" fill="#FFD93D" stroke="#FFC107" stroke-width="1.5"/>
+
+  <!-- Text lines representing formatted post -->
+  <rect x="30" y="80" width="68" height="4" rx="2" fill="white" opacity="0.9"/>
+  <rect x="30" y="90" width="58" height="4" rx="2" fill="white" opacity="0.8"/>
+  <rect x="30" y="100" width="48" height="4" rx="2" fill="white" opacity="0.7"/>
+
+  <!-- LinkedIn accent -->
+  <circle cx="106" cy="106" r="12" fill="#FFD93D"/>
+  <path d="M106 100 L106 112 M100 106 L112 106" stroke="#0A66C2" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
