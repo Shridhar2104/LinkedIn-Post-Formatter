@@ -1,8 +1,8 @@
-import { LinkedInFormatter } from '../../utils/formatter';
+import { LinkedInFormatter, FormatType } from '../../utils/formatter';
 
 interface FormatSelectorProps {
-  selectedFormat: string;
-  onSelectFormat: (format: string) => void;
+  selectedFormat: FormatType;
+  onSelectFormat: (format: FormatType) => void;
 }
 
 export default function FormatSelector({ selectedFormat, onSelectFormat }: FormatSelectorProps) {

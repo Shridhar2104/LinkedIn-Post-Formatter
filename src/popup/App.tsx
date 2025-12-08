@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Copy, Send, Settings, Crown, TrendingUp } from 'lucide-react';
-import { LinkedInFormatter, FormatOptions } from '../utils/formatter';
+import { LinkedInFormatter, FormatOptions, FormatType } from '../utils/formatter';
 import { StorageManager, UserData } from '../utils/storage';
 import { Analytics } from '../utils/analytics';
 import FormatSelector from './components/FormatSelector';
@@ -36,7 +36,7 @@ function App() {
     setFormatOptions(prev => ({
       ...prev,
       ...data.preferences,
-      formatType: data.preferences.defaultFormatType as any,
+      formatType: data.preferences.defaultFormatType as FormatType,
     }));
   };
 
