@@ -4,7 +4,7 @@
 console.log('LinkedIn Post Formatter: Content script loaded');
 
 // Listen for messages from the popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.action === 'insertFormatted') {
     insertFormattedPost(request.content);
     sendResponse({ success: true });

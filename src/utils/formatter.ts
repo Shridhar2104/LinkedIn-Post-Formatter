@@ -7,6 +7,8 @@ export interface FormatOptions {
   formatType: 'thread' | 'listicle' | 'story' | 'tips' | 'custom';
 }
 
+export type FormatType = FormatOptions['formatType'];
+
 export interface FormattedPost {
   content: string;
   preview: string;
@@ -135,7 +137,7 @@ export class LinkedInFormatter {
     }).join('\n\n');
   }
 
-  private static formatStory(text: string, options: FormatOptions): string {
+  private static formatStory(text: string, _options: FormatOptions): string {
     // Story format: Short paragraphs with emotional beats
     const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
 
@@ -272,7 +274,13 @@ export class LinkedInFormatter {
     return text.slice(0, maxLength) + '...';
   }
 
-  static getTemplates() {
+  static getTemplates(): Array<{
+    id: FormatType;
+    name: string;
+    description: string;
+    icon: string;
+    example: string;
+  }> {
     return [
       {
         id: 'thread',

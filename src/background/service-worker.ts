@@ -35,7 +35,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 });
 
 // Listen for messages from popup or content scripts
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.action === 'openPopup') {
     // Can't directly open popup, but we can provide feedback
     sendResponse({ success: false, message: 'Click the extension icon to open' });

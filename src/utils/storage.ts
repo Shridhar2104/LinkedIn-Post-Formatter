@@ -1,3 +1,5 @@
+import { FormatType } from './formatter';
+
 export interface UserData {
   isPro: boolean;
   formatsUsedToday: number;
@@ -11,12 +13,12 @@ export interface SavedTemplate {
   id: string;
   name: string;
   content: string;
-  formatType: string;
+  formatType: FormatType;
   createdAt: string;
 }
 
 export interface UserPreferences {
-  defaultFormatType: string;
+  defaultFormatType: FormatType;
   addLineBreaks: boolean;
   addEmojis: boolean;
   addBulletPoints: boolean;
