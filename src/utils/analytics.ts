@@ -114,6 +114,16 @@ export class Analytics {
       timestamp: new Date().toISOString(),
     });
   }
+
+  // Generic track method for custom events
+  static track(eventName: string, properties?: Record<string, any>) {
+    if (!initialized) return;
+
+    posthog.capture(eventName, {
+      ...properties,
+      timestamp: new Date().toISOString(),
+    });
+  }
 }
 
 // Auto-initialize

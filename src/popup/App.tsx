@@ -16,6 +16,7 @@ function App() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isFormatting, setIsFormatting] = useState(false);
 
   const [formatOptions, setFormatOptions] = useState<FormatOptions>({
     addLineBreaks: true,
@@ -24,6 +25,9 @@ function App() {
     addHook: true,
     addCTA: true,
     formatType: 'thread',
+    useLLM: false,
+    tone: 'professional',
+    llmProvider: 'openai',
   });
 
   useEffect(() => {
@@ -53,20 +57,46 @@ function App() {
       return;
     }
 
-    // Format the post
-    const result = LinkedInFormatter.formatPost(inputText, formatOptions);
-    setFormattedText(result.content);
+    // Check if trying to use LLM without Pro
+    if (formatOptions.useLLM && !userData?.isPro) {
+      alert('🤖 AI-powered formatting is a Pro feature!\n\nUpgrade to Pro for:\n• Smarter, context-aware formatting\n• Better engagement optimization\n• Multiple AI providers');
+      setShowUpgrade(true);
+      return;
+    }
 
-    // Track and update counts
-    await StorageManager.incrementFormatCount();
-    Analytics.trackFormatted(
-      formatOptions.formatType,
-      inputText.length,
-      userData?.isPro ? 'pro' : 'free'
-    );
+    setIsFormatting(true);
 
-    // Reload user data to update stats
-    await loadUserData();
+    try {
+      // Format the post (now async!)
+      const result = await LinkedInFormatter.formatPost(inputText, formatOptions);
+      setFormattedText(result.content);
+
+      // Track and update counts
+      await StorageManager.incrementFormatCount();
+      Analytics.trackFormatted(
+        formatOptions.formatType,
+        inputText.length,
+        userData?.isPro ? 'pro' : 'free'
+      );
+
+      // Track if LLM was used
+      if (result.usedLLM) {
+        Analytics.track('llm_format_success', {
+          provider: formatOptions.llmProvider,
+          confidence: result.confidence,
+        });
+      }
+
+      // Reload user data to update stats
+      await loadUserData();
+    } catch (error) {
+      console.error('Formatting failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`❌ Formatting failed: ${errorMessage}\n\nPlease try again or contact support.`);
+      Analytics.track('format_error', { error: errorMessage });
+    } finally {
+      setIsFormatting(false);
+    }
   };
 
   const handleCopy = async () => {
@@ -212,14 +242,60 @@ function App() {
           </div>
         </div>
 
+        {/* AI-Powered Formatting (Pro) */}
+        {userData?.isPro && (
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3 shadow-sm space-y-2 border border-purple-200">
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} className="text-purple-600" />
+              <p className="text-xs font-semibold text-purple-900">AI-Powered Formatting</p>
+              <span className="ml-auto px-2 py-0.5 bg-purple-600 text-white text-[10px] rounded-full font-bold">PRO</span>
+            </div>
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={formatOptions.useLLM}
+                onChange={(e) => setFormatOptions({ ...formatOptions, useLLM: e.target.checked })}
+                className="rounded"
+              />
+              <span className="font-medium">Use AI for smarter formatting</span>
+            </label>
+            {formatOptions.useLLM && (
+              <div className="space-y-2 mt-2 pl-6">
+                <div>
+                  <label className="text-xs text-gray-700 font-medium">Tone:</label>
+                  <select
+                    value={formatOptions.tone}
+                    onChange={(e) => setFormatOptions({ ...formatOptions, tone: e.target.value as any })}
+                    className="ml-2 text-xs border rounded px-2 py-1"
+                  >
+                    <option value="professional">Professional</option>
+                    <option value="casual">Casual</option>
+                    <option value="inspirational">Inspirational</option>
+                    <option value="educational">Educational</option>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Format Button */}
         <button
           onClick={handleFormat}
-          disabled={!inputText.trim()}
+          disabled={!inputText.trim() || isFormatting}
           className="w-full bg-linkedin-600 text-white py-3 rounded-lg font-semibold hover:bg-linkedin-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          <TrendingUp size={18} />
-          Format Post
+          {isFormatting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              {formatOptions.useLLM ? 'AI Formatting...' : 'Formatting...'}
+            </>
+          ) : (
+            <>
+              {formatOptions.useLLM ? <Sparkles size={18} /> : <TrendingUp size={18} />}
+              {formatOptions.useLLM ? 'AI Format Post' : 'Format Post'}
+            </>
+          )}
         </button>
 
         {/* Preview Panel */}
