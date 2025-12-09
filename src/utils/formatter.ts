@@ -5,6 +5,9 @@ export interface FormatOptions {
   addHook: boolean;
   addCTA: boolean;
   formatType: 'thread' | 'listicle' | 'story' | 'tips' | 'custom';
+  useLLM?: boolean; // New: Enable LLM-powered formatting
+  tone?: 'professional' | 'casual' | 'inspirational' | 'educational';
+  llmProvider?: 'openai' | 'anthropic' | 'gemini';
 }
 
 export type FormatType = FormatOptions['formatType'];
@@ -17,6 +20,8 @@ export interface FormattedPost {
     characters: number;
     readabilityScore: number;
   };
+  usedLLM?: boolean; // Track if LLM was used
+  confidence?: number; // LLM confidence score
 }
 
 const HOOKS = [
@@ -50,7 +55,67 @@ const EMOJIS = {
 
 export class LinkedInFormatter {
 
-  static formatPost(text: string, options: FormatOptions): FormattedPost {
+  static async formatPost(text: string, options: FormatOptions): Promise<FormattedPost> {
+    // If LLM is enabled and user is Pro, use LLM formatting
+    if (options.useLLM) {
+      try {
+        const llmResult = await this.formatWithLLM(text, options);
+        return llmResult;
+      } catch (error) {
+        console.error('LLM formatting failed, falling back to rule-based:', error);
+        // Fall back to rule-based formatting
+      }
+    }
+
+    // Rule-based formatting (original logic)
+    return this.formatWithRules(text, options);
+  }
+
+  /**
+   * LLM-powered formatting (Pro feature)
+   */
+  private static async formatWithLLM(text: string, options: FormatOptions): Promise<FormattedPost> {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+    const response = await fetch(`${backendUrl}/api/format`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content: text,
+        formatType: options.formatType,
+        options: {
+          addHook: options.addHook,
+          addEmojis: options.addEmojis,
+          addBulletPoints: options.addBulletPoints,
+          addCTA: options.addCTA,
+          tone: options.tone || 'professional',
+        },
+        provider: options.llmProvider || 'openai',
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('LLM formatting failed');
+    }
+
+    const data = await response.json();
+    const stats = this.calculateStats(data.formatted);
+
+    return {
+      content: data.formatted,
+      preview: this.generatePreview(data.formatted),
+      stats,
+      usedLLM: true,
+      confidence: data.confidence || 95,
+    };
+  }
+
+  /**
+   * Rule-based formatting (Free tier & fallback)
+   */
+  private static formatWithRules(text: string, options: FormatOptions): FormattedPost {
     let formatted = text.trim();
 
     // Add hook at the beginning
@@ -89,6 +154,7 @@ export class LinkedInFormatter {
       content: formatted,
       preview: this.generatePreview(formatted),
       stats,
+      usedLLM: false,
     };
   }
 
